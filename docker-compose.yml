@@ -1,0 +1,22 @@
+# 모노레포 루트 오케스트레이터.
+# backend 스택(Spring app + Postgres + Redis + 모니터링)을 include로 그대로 가져오고,
+# 여기에 ai-service를 추가한다. 추후 frontend/nginx도 이 파일에 얹는다.
+#
+#   docker compose up            # 전체(backend + ai-service)
+#   cd backend && docker compose up   # 여전히 backend 스택만 단독 실행 가능
+
+include:
+  - backend/docker-compose.yml
+
+services:
+  ai-service:
+    build:
+      context: ./ai-service
+    image: secondhand-ai-service:latest
+    container_name: ai-service
+    # 외부 포트 미공개 — 내부 네트워크에서 Spring만 호출한다.
+    expose:
+      - "8000"
+    networks:
+      - monitoring
+    restart: unless-stopped
