@@ -11,6 +11,10 @@ services:
       - "8080:8080"
     env_file:
       - .env
+    environment:
+      # 컨테이너 내부에서는 localhost가 아닌 서비스명으로 붙어야 한다 (.env의 local 프로필을 덮어씀).
+      SPRING_PROFILES_ACTIVE: docker
+      REDIS_HOST: redis
     networks:
       - monitoring
     depends_on:
