@@ -36,6 +36,16 @@ Docker(모노레포 루트에서 전체 기동):
 docker compose up -d          # backend 스택 + ai-service
 ```
 
+## 품질 평가 (골든셋)
+
+```bash
+uv run --env-file .env python eval/run_eval.py
+```
+
+`eval/golden/cases.json`의 12케이스를 실행해 카테고리 정확도·가격 범위 적중률·형식 준수율을 출력하고, 결과를 `eval/results/<타임스탬프>.json`에 남긴다. 기준선 수치와 해석은 [docs/measurements/ai-quality-baseline.md](../docs/measurements/ai-quality-baseline.md)에 있다.
+
+> **비용 주의**: 실제 OpenAI를 호출한다(1회 실행에 LLM 48회). **CI에서 실행하지 않는다.** 점수를 올리려고 골든셋 케이스를 고치지 않는다.
+
 ## API
 
 | 메서드 | 경로 | 설명 |
