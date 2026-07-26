@@ -26,6 +26,7 @@ src/main/generated/
 **/resources/application-local.properties
 **/resources/application-test.properties
 **/resources/application-prod.properties
+**/resources/application-docker.properties
 
 ### WSL2 artifacts ###
 *:Zone.Identifier
