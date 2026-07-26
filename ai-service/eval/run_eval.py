@@ -47,35 +47,58 @@ def check_keywords(text: str, keyword_groups: list[list[str]]) -> list[list[str]
     return [group for group in keyword_groups if not any(word in text for word in group)]
 
 
+def check_confidence(expected: str, actual: str) -> bool:
+    """expectedConfidence는 HIGH / NOT_HIGH 두 값만 쓴다."""
+    return actual == "HIGH" if expected == "HIGH" else actual != "HIGH"
+
+
 def run_case(case: dict, llm: OpenAILLMClient) -> dict:
     started = time.monotonic()
-    result = {"id": case["id"], "kind": case["kind"], "expectedCategory": case["expectedCategory"]}
+    result = {
+        "id": case["id"],
+        "kind": case["kind"],
+        "expectedCategory": case["expectedCategory"],
+        "expectedConfidence": case["expectedConfidence"],
+    }
+    # 정답을 정의할 수 없는 케이스는 해당 지표의 분모에서 빠진다(None으로 남긴다).
+    price_range = case["expectedPriceRange"]
+    keyword_groups = case["requiredKeywords"]
 
     try:
         draft = run_listing_draft(
             ListingDraftRequest(imageUrls=[case["imageUrl"]], userHint=case.get("userHint")), llm
         )
     except Exception as error:
-        result.update(status="error", error=f"{type(error).__name__}: {error}")
-        result["elapsedSec"] = round(time.monotonic() - started, 1)
+        result.update(
+            status="error",
+            error=f"{type(error).__name__}: {error}",
+            elapsedSec=round(time.monotonic() - started, 1),
+            categoryCorrect=False if case["expectedCategory"] else None,
+            confidenceOk=False,
+            priceInRange=False if price_range else None,
+            formatOk=False,
+            keywordsOk=False if keyword_groups else None,
+        )
         return result
 
-    low, high = case["expectedPriceRange"]
     amount = draft.suggestedPrice.amount
     format_violations = check_format(draft.title, draft.description)
-    missing = check_keywords(f"{draft.title} {draft.description}", case["requiredKeywords"])
+    missing = check_keywords(f"{draft.title} {draft.description}", keyword_groups)
 
     result.update(
         status="ok",
         elapsedSec=round(time.monotonic() - started, 1),
         actualCategory=draft.category.value,
-        categoryCorrect=draft.category.value == case["expectedCategory"],
+        categoryCorrect=(
+            draft.category.value == case["expectedCategory"] if case["expectedCategory"] else None
+        ),
         confidence=draft.confidence.value,
+        confidenceOk=check_confidence(case["expectedConfidence"], draft.confidence.value),
         amount=amount,
-        priceInRange=low <= amount <= high,
+        priceInRange=price_range[0] <= amount <= price_range[1] if price_range else None,
         formatOk=not format_violations,
         formatViolations=format_violations,
-        keywordsOk=not missing,
+        keywordsOk=not missing if keyword_groups else None,
         missingKeywordGroups=missing,
         title=draft.title,
         description=draft.description,
@@ -85,8 +108,9 @@ def run_case(case: dict, llm: OpenAILLMClient) -> dict:
 
 
 def rate(results: list[dict], key: str) -> tuple[int, int]:
-    """(충족 개수, 전체 개수). 오류 케이스는 미충족으로 센다."""
-    return sum(1 for r in results if r.get(key)), len(results)
+    """(충족 개수, 적용 대상 개수). None은 정답을 정의할 수 없는 케이스이므로 분모에서 뺀다."""
+    applicable = [r for r in results if r.get(key) is not None]
+    return sum(1 for r in applicable if r[key]), len(applicable)
 
 
 def main() -> int:
@@ -101,11 +125,18 @@ def main() -> int:
         if result["status"] == "error":
             print(f"오류 ({result['error'][:60]})")
         else:
-            mark = "정답" if result["categoryCorrect"] else f"오답→{result['actualCategory']}"
-            print(f"{mark} / {result['amount']:,}원 / {result['elapsedSec']}s")
+            if result["categoryCorrect"] is None:
+                mark = f"카테고리 정답없음(→{result['actualCategory']})"
+            elif result["categoryCorrect"]:
+                mark = "정답"
+            else:
+                mark = f"오답→{result['actualCategory']}"
+            confidence = result["confidence"] + ("" if result["confidenceOk"] else " ✗")
+            print(f"{mark} / {confidence} / {result['amount']:,}원 / {result['elapsedSec']}s")
 
     metrics = {
         "categoryAccuracy": rate(results, "categoryCorrect"),
+        "confidenceAccuracy": rate(results, "confidenceOk"),
         "priceInRangeRate": rate(results, "priceInRange"),
         "formatComplianceRate": rate(results, "formatOk"),
         "keywordCoverageRate": rate(results, "keywordsOk"),

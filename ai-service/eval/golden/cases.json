@@ -2,7 +2,9 @@
   "notes": [
     "이미지는 Wikimedia Commons 공개 사진이다. 실제 중고 매물 사진이 아니므로 배경·구도가 판매글 사진과 다를 수 있다.",
     "expectedPriceRange는 한국 중고 시세에 대한 작성자의 추정이며 확정된 정답이 아니다. 절대 수치보다 재실행 간 변화를 보는 용도다.",
-    "requiredKeywords의 각 원소는 OR 그룹이다. 그룹마다 하나 이상 포함되면 통과 (표기 흔들림을 허용하기 위함)."
+    "requiredKeywords의 각 원소는 OR 그룹이다. 그룹마다 하나 이상 포함되면 통과 (표기 흔들림을 허용하기 위함).",
+    "expectedConfidence는 HIGH(자신 있어야 함) / NOT_HIGH(MEDIUM·LOW 중 하나여야 함) 두 값만 쓴다. MEDIUM과 LOW를 구분해 요구하지 않는다 — 모델이 그 경계를 일관되게 지킬 근거가 없다.",
+    "expectedCategory·expectedPriceRange·requiredKeywords는 null(또는 빈 배열)일 수 있다. 매물을 특정할 수 없거나 카테고리 5종 어디에도 속하지 않아 정답을 정의할 수 없는 케이스이며, 해당 지표의 분모에서 제외된다."
   ],
   "cases": [
     {
@@ -11,6 +13,7 @@
       "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Nikon_DSLR_camera_D850.jpg/960px-Nikon_DSLR_camera_D850.jpg",
       "userHint": "니콘 DSLR 팝니다",
       "expectedCategory": "DIGITAL",
+      "expectedConfidence": "HIGH",
       "expectedPriceRange": [600000, 2500000],
       "requiredKeywords": [["니콘", "Nikon", "D850"], ["카메라"]]
     },
@@ -20,6 +23,7 @@
       "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Schenker_VIA14_Laptop_asv2021-01.jpg/960px-Schenker_VIA14_Laptop_asv2021-01.jpg",
       "userHint": "노트북 처분합니다",
       "expectedCategory": "DIGITAL",
+      "expectedConfidence": "HIGH",
       "expectedPriceRange": [200000, 900000],
       "requiredKeywords": [["노트북", "랩탑"]]
     },
@@ -29,6 +33,7 @@
       "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Ford_Wilson_Desk_%28cropped%29.jpg/960px-Ford_Wilson_Desk_%28cropped%29.jpg",
       "userHint": "원목 책상 팝니다",
       "expectedCategory": "FURNITURE",
+      "expectedConfidence": "HIGH",
       "expectedPriceRange": [50000, 600000],
       "requiredKeywords": [["책상", "데스크", "테이블"]]
     },
@@ -39,6 +44,7 @@
       "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Bookcase_in_Olten.jpg/960px-Bookcase_in_Olten.jpg",
       "userHint": "책장 정리합니다",
       "expectedCategory": "FURNITURE",
+      "expectedConfidence": "HIGH",
       "expectedPriceRange": [30000, 400000],
       "requiredKeywords": [["책장", "책꽂이", "선반"]]
     },
@@ -48,6 +54,7 @@
       "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Jean_jacket.jpg/960px-Jean_jacket.jpg",
       "userHint": "청자켓 팝니다",
       "expectedCategory": "CLOTHING",
+      "expectedConfidence": "HIGH",
       "expectedPriceRange": [10000, 150000],
       "requiredKeywords": [["데님", "청"], ["자켓", "재킷", "재바", "점퍼"]]
     },
@@ -58,6 +65,7 @@
       "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Asics_Gel-Cumulus_22.jpg/960px-Asics_Gel-Cumulus_22.jpg",
       "userHint": "러닝화 팝니다",
       "expectedCategory": "CLOTHING",
+      "expectedConfidence": "HIGH",
       "expectedPriceRange": [20000, 150000],
       "requiredKeywords": [["러닝화", "운동화", "신발"]]
     },
@@ -68,6 +76,7 @@
       "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Gola_Speedster_soccer_shoes_20200501_001.jpg/960px-Gola_Speedster_soccer_shoes_20200501_001.jpg",
       "userHint": "축구화 팝니다",
       "expectedCategory": "CLOTHING",
+      "expectedConfidence": "HIGH",
       "expectedPriceRange": [10000, 120000],
       "requiredKeywords": [["축구화", "풋살화", "운동화", "신발"]]
     },
@@ -77,6 +86,7 @@
       "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Stack_of_multicolored_books_on_a_table.jpg/960px-Stack_of_multicolored_books_on_a_table.jpg",
       "userHint": "책 여러 권 일괄 판매합니다",
       "expectedCategory": "BOOK",
+      "expectedConfidence": "HIGH",
       "expectedPriceRange": [5000, 80000],
       "requiredKeywords": [["책", "도서", "서적"]]
     },
@@ -86,6 +96,7 @@
       "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Coffee_Table_book_stack.jpg/960px-Coffee_Table_book_stack.jpg",
       "userHint": "화보집 팝니다",
       "expectedCategory": "BOOK",
+      "expectedConfidence": "HIGH",
       "expectedPriceRange": [5000, 100000],
       "requiredKeywords": [["책", "도서", "화보"]]
     },
@@ -95,6 +106,7 @@
       "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Pfanne_%28Edelstahl%29.jpg",
       "userHint": "스테인리스 팬 팝니다",
       "expectedCategory": "KITCHEN_UTENSIL",
+      "expectedConfidence": "HIGH",
       "expectedPriceRange": [5000, 80000],
       "requiredKeywords": [["팬", "프라이팬", "후라이팬"]]
     },
@@ -105,6 +117,7 @@
       "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Panasonic_RICE_COOKER_SR-L15H8.jpg/960px-Panasonic_RICE_COOKER_SR-L15H8.jpg",
       "userHint": "전기밥솥 팝니다",
       "expectedCategory": "KITCHEN_UTENSIL",
+      "expectedConfidence": "HIGH",
       "expectedPriceRange": [10000, 200000],
       "requiredKeywords": [["밥솥"]]
     },
@@ -115,8 +128,64 @@
       "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Blurry_shoes.jpg/960px-Blurry_shoes.jpg",
       "userHint": "신발 팝니다",
       "expectedCategory": "CLOTHING",
+      "expectedConfidence": "NOT_HIGH",
       "expectedPriceRange": [5000, 150000],
       "requiredKeywords": [["신발", "운동화", "슈즈"]]
+    },
+    {
+      "id": "partial-denim-closeup",
+      "kind": "low_quality",
+      "boundaryNote": "데님 원단 클로즈업 — 소재는 보이지만 청바지·재킷·가방 중 무엇인지 알 수 없다. 카테고리는 CLOTHING이 타당하나 물건 특정은 불가능하다",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Close-up_of_Denim_Fabric.jpg/960px-Close-up_of_Denim_Fabric.jpg",
+      "userHint": "옷 팝니다",
+      "expectedCategory": "CLOTHING",
+      "expectedConfidence": "NOT_HIGH",
+      "expectedPriceRange": null,
+      "requiredKeywords": []
+    },
+    {
+      "id": "mixed-flea-market",
+      "kind": "low_quality",
+      "boundaryNote": "벼룩시장 노점 전경 — 사람과 여러 물건이 뒤섞여 무엇이 매물인지 특정할 수 없다",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Cais_de_Gaia_%2855243312415%29.jpg/960px-Cais_de_Gaia_%2855243312415%29.jpg",
+      "userHint": "물건 정리합니다",
+      "expectedCategory": null,
+      "expectedConfidence": "NOT_HIGH",
+      "expectedPriceRange": null,
+      "requiredKeywords": []
+    },
+    {
+      "id": "unidentifiable-night-blur",
+      "kind": "low_quality",
+      "boundaryNote": "야간에 심하게 흔들린 사진 — 매물로 볼 물건 자체가 보이지 않는다. 무엇이든 그럴듯하게 지어내면 안 된다",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Define_camera_shake.jpg/960px-Define_camera_shake.jpg",
+      "userHint": "사진 올려요",
+      "expectedCategory": null,
+      "expectedConfidence": "NOT_HIGH",
+      "expectedPriceRange": null,
+      "requiredKeywords": []
+    },
+    {
+      "id": "outside-enum-bicycle",
+      "kind": "outside_enum",
+      "boundaryNote": "자전거 — 카테고리 5종 어디에도 속하지 않는다. 하나를 고를 수밖에 없으니 신뢰도는 낮아야 한다",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Sporting_bicycle_side_view.JPG/960px-Sporting_bicycle_side_view.JPG",
+      "userHint": "로드 자전거 팝니다",
+      "expectedCategory": null,
+      "expectedConfidence": "NOT_HIGH",
+      "expectedPriceRange": [30000, 600000],
+      "requiredKeywords": [["자전거"]]
+    },
+    {
+      "id": "outside-enum-guitar",
+      "kind": "outside_enum",
+      "boundaryNote": "일렉기타 — 카테고리 5종 어디에도 속하지 않는다",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Guitarra_el%C3%A9ctrica.JPG/960px-Guitarra_el%C3%A9ctrica.JPG",
+      "userHint": "일렉기타 팝니다",
+      "expectedCategory": null,
+      "expectedConfidence": "NOT_HIGH",
+      "expectedPriceRange": [50000, 800000],
+      "requiredKeywords": [["기타"]]
     }
   ]
 }
