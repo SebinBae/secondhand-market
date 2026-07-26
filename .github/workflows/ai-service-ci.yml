@@ -1,0 +1,35 @@
+name: ai-service CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'ai-service/**'
+      - '.github/workflows/ai-service-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'ai-service/**'
+      - '.github/workflows/ai-service-ci.yml'
+
+jobs:
+  ai-service-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ai-service
+
+    steps:
+      - name: 체크아웃
+        uses: actions/checkout@v4
+
+      - name: uv 설정
+        uses: astral-sh/setup-uv@v3
+        with:
+          python-version: '3.12'
+
+      - name: 의존성 설치
+        run: uv sync
+
+      - name: 테스트
+        run: uv run pytest
