@@ -1,12 +1,15 @@
 package com.sebin.secondhand_market.domain.product.controller;
 
+import com.sebin.secondhand_market.domain.product.dto.request.ListingDraftRequest;
 import com.sebin.secondhand_market.domain.product.dto.request.ProductCreateRequest;
 import com.sebin.secondhand_market.domain.product.dto.request.ProductSearchRequest;
 import com.sebin.secondhand_market.domain.product.dto.request.ProductStatusChangeRequest;
+import com.sebin.secondhand_market.domain.product.dto.response.ListingDraftResponse;
 import com.sebin.secondhand_market.domain.product.dto.response.ProductCreatedResponse;
 import com.sebin.secondhand_market.domain.product.dto.response.ProductDetailResponse;
 import com.sebin.secondhand_market.domain.product.dto.response.ProductImageUploadResponse;
 import com.sebin.secondhand_market.domain.product.dto.response.ProductResponse;
+import com.sebin.secondhand_market.domain.product.service.ProductAiAssistService;
 import com.sebin.secondhand_market.domain.product.service.ProductImageService;
 import com.sebin.secondhand_market.domain.product.service.ProductReadService;
 import com.sebin.secondhand_market.domain.product.service.ProductService;
@@ -44,6 +47,7 @@ public class ProductController {
   private final ProductService productService;
   private final ProductReadService productReadService;
   private final ProductImageService productImageService;
+  private final ProductAiAssistService productAiAssistService;
 
   // 상품 등록
   @Operation(summary = "상품 등록")
@@ -135,6 +139,15 @@ public class ProductController {
   @GetMapping("/{productId}")
   public ResponseEntity<ProductDetailResponse> detail(@PathVariable UUID productId) {
     return ResponseEntity.ok(productReadService.getProductDetail(productId));
+  }
+
+  // AI 등록 초안 (제안일 뿐 저장하지 않는다. ai-service 장애 시 aiAvailable=false)
+  @Operation(summary = "AI 등록 초안 생성")
+  @PostMapping("/listing-drafts")
+  public ResponseEntity<ListingDraftResponse> createListingDraft(
+      @RequestBody @Valid ListingDraftRequest request
+  ) {
+    return ResponseEntity.ok(productAiAssistService.createDraft(request));
   }
 
   // 상품 이미지 업로드 (본인 상품, 여러 장, 상품당 최대 10장)
