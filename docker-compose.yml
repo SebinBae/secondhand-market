@@ -9,11 +9,21 @@ include:
   - backend/docker-compose.yml
 
 services:
+  # backend 스택의 app 정의에 ai-service 주소만 얹는다.
+  # backend 단독 실행 시에는 이 값이 없고, 호출 실패는 초안 API가 aiAvailable=false로 흡수한다.
+  app:
+    environment:
+      AI_SERVICE_URL: http://ai-service:8000
+
   ai-service:
     build:
       context: ./ai-service
     image: secondhand-ai-service:latest
     container_name: ai-service
+    # OPENAI_API_KEY / AI_MODEL 주입. 키가 없어도 기동은 되고 초안 생성 시점에만 실패한다.
+    env_file:
+      - path: ./ai-service/.env
+        required: false
     # 외부 포트 미공개 — 내부 네트워크에서 Spring만 호출한다.
     expose:
       - "8000"
