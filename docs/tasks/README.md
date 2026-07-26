@@ -24,14 +24,25 @@ docs/tasks/task-05-product-image-upload.md 읽고 작업 진행해줘.
 | task-03-application-event | #25 | ✅ |
 | task-04-k6-baseline | #26 | ✅ |
 
-## 배치 2 — AI 상품 등록 어시스턴트 (2~3주차)
+## 배치 2 — AI 상품 등록 어시스턴트 (완료: 2026-07-26)
+
+| 문서 | PR | 상태 |
+|---|---|---|
+| task-05-product-image-upload | #29 | ✅ |
+| task-06-ai-service-scaffold | #31 | ✅ |
+| task-07-listing-draft-graph | #33 | ✅ |
+| task-08-ai-assist-integration | #34 | ✅ |
+| task-09-golden-set-eval | #35 | ✅ |
+
+배치 중 발견해 분리 처리한 것: 컨테이너용 docker 프로필 부재(#30).
+
+## 배치 3 — AI 신뢰도 보정
+
+task-09 기준선에서 12케이스 전부 `HIGH`가 나와, task-07의 저신뢰 재분류 분기가 죽어 있음이 드러났다. 측정 도구를 먼저 갖춘 뒤 고친다 — 순서를 바꾸면 "케이스를 통과하기 쉽게 맞췄다"를 반박할 수 없다.
 
 | 순서 | 문서 | 브랜치 | 선행 조건 |
 |---|---|---|---|
-| 1 | task-05-product-image-upload.md | feat/product-image-upload | 없음 |
-| 2 | task-06-ai-service-scaffold.md | feat/ai-service-scaffold | 없음 (05와 병렬 가능) |
-| 3 | task-07-listing-draft-graph.md | feat/listing-draft-graph | task-06 머지 |
-| 4 | task-08-ai-assist-integration.md | feat/ai-assist-integration | task-05, 07 머지 |
-| 5 | task-09-golden-set-eval.md | chore/golden-set-eval | task-07 머지 |
+| 1 | task-10-confidence-goldenset-extension.md | chore/confidence-goldenset | task-09 머지 |
+| 2 | task-11-confidence-calibration.md | feat/confidence-calibration | task-10 머지 |
 
-배치 3(3~4주차: LIKE 검색 보강)부터는 착수 시점에 작성.
+배치 4(LIKE 검색 보강)부터는 착수 시점에 작성.
