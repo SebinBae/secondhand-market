@@ -42,9 +42,11 @@ docker compose up -d          # backend 스택 + ai-service
 uv run --env-file .env python eval/run_eval.py
 ```
 
-`eval/golden/cases.json`의 12케이스를 실행해 카테고리 정확도·가격 범위 적중률·형식 준수율을 출력하고, 결과를 `eval/results/<타임스탬프>.json`에 남긴다. 기준선 수치와 해석은 [docs/measurements/ai-quality-baseline.md](../docs/measurements/ai-quality-baseline.md)에 있다.
+`eval/golden/cases.json`의 17케이스를 실행해 카테고리 정확도·신뢰도 적중률·가격 범위 적중률·형식 준수율을 출력하고, 결과를 `eval/results/<타임스탬프>.json`에 남긴다. 측정 수치와 해석은 [docs/measurements/ai-quality-baseline.md](../docs/measurements/ai-quality-baseline.md)에 있다.
 
-> **비용 주의**: 실제 OpenAI를 호출한다(1회 실행에 LLM 48회). **CI에서 실행하지 않는다.** 점수를 올리려고 골든셋 케이스를 고치지 않는다.
+정답을 정의할 수 없는 케이스(매물 특정 불가, 카테고리 5종 밖)는 `expectedCategory` 등을 `null`로 두고 해당 지표의 분모에서 뺀다.
+
+> **비용 주의**: 실제 OpenAI를 호출한다(1회 실행에 최대 LLM 68회). **CI에서 실행하지 않는다.** 점수를 올리려고 골든셋 케이스를 고치지 않는다.
 
 ## API
 
