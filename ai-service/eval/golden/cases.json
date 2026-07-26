@@ -1,0 +1,122 @@
+{
+  "notes": [
+    "이미지는 Wikimedia Commons 공개 사진이다. 실제 중고 매물 사진이 아니므로 배경·구도가 판매글 사진과 다를 수 있다.",
+    "expectedPriceRange는 한국 중고 시세에 대한 작성자의 추정이며 확정된 정답이 아니다. 절대 수치보다 재실행 간 변화를 보는 용도다.",
+    "requiredKeywords의 각 원소는 OR 그룹이다. 그룹마다 하나 이상 포함되면 통과 (표기 흔들림을 허용하기 위함)."
+  ],
+  "cases": [
+    {
+      "id": "digital-dslr",
+      "kind": "normal",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Nikon_DSLR_camera_D850.jpg/960px-Nikon_DSLR_camera_D850.jpg",
+      "userHint": "니콘 DSLR 팝니다",
+      "expectedCategory": "DIGITAL",
+      "expectedPriceRange": [600000, 2500000],
+      "requiredKeywords": [["니콘", "Nikon", "D850"], ["카메라"]]
+    },
+    {
+      "id": "digital-laptop",
+      "kind": "normal",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Schenker_VIA14_Laptop_asv2021-01.jpg/960px-Schenker_VIA14_Laptop_asv2021-01.jpg",
+      "userHint": "노트북 처분합니다",
+      "expectedCategory": "DIGITAL",
+      "expectedPriceRange": [200000, 900000],
+      "requiredKeywords": [["노트북", "랩탑"]]
+    },
+    {
+      "id": "furniture-desk",
+      "kind": "normal",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Ford_Wilson_Desk_%28cropped%29.jpg/960px-Ford_Wilson_Desk_%28cropped%29.jpg",
+      "userHint": "원목 책상 팝니다",
+      "expectedCategory": "FURNITURE",
+      "expectedPriceRange": [50000, 600000],
+      "requiredKeywords": [["책상", "데스크", "테이블"]]
+    },
+    {
+      "id": "furniture-bookcase",
+      "kind": "boundary",
+      "boundaryNote": "책장 — 책(BOOK)과 가구(FURNITURE) 사이에서 흔들릴 수 있다",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Bookcase_in_Olten.jpg/960px-Bookcase_in_Olten.jpg",
+      "userHint": "책장 정리합니다",
+      "expectedCategory": "FURNITURE",
+      "expectedPriceRange": [30000, 400000],
+      "requiredKeywords": [["책장", "책꽂이", "선반"]]
+    },
+    {
+      "id": "clothing-denim-jacket",
+      "kind": "normal",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Jean_jacket.jpg/960px-Jean_jacket.jpg",
+      "userHint": "청자켓 팝니다",
+      "expectedCategory": "CLOTHING",
+      "expectedPriceRange": [10000, 150000],
+      "requiredKeywords": [["데님", "청"], ["자켓", "재킷", "재바", "점퍼"]]
+    },
+    {
+      "id": "clothing-running-shoes",
+      "kind": "boundary",
+      "boundaryNote": "신발 — 백엔드 enum에 신발 카테고리가 없어 CLOTHING으로 수렴해야 한다",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Asics_Gel-Cumulus_22.jpg/960px-Asics_Gel-Cumulus_22.jpg",
+      "userHint": "러닝화 팝니다",
+      "expectedCategory": "CLOTHING",
+      "expectedPriceRange": [20000, 150000],
+      "requiredKeywords": [["러닝화", "운동화", "신발"]]
+    },
+    {
+      "id": "clothing-soccer-shoes",
+      "kind": "boundary",
+      "boundaryNote": "축구화 vs 풋살화 — 스터드 유무로 갈리는데 사진만으로는 구분이 어렵다",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Gola_Speedster_soccer_shoes_20200501_001.jpg/960px-Gola_Speedster_soccer_shoes_20200501_001.jpg",
+      "userHint": "축구화 팝니다",
+      "expectedCategory": "CLOTHING",
+      "expectedPriceRange": [10000, 120000],
+      "requiredKeywords": [["축구화", "풋살화", "운동화", "신발"]]
+    },
+    {
+      "id": "book-stack",
+      "kind": "normal",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Stack_of_multicolored_books_on_a_table.jpg/960px-Stack_of_multicolored_books_on_a_table.jpg",
+      "userHint": "책 여러 권 일괄 판매합니다",
+      "expectedCategory": "BOOK",
+      "expectedPriceRange": [5000, 80000],
+      "requiredKeywords": [["책", "도서", "서적"]]
+    },
+    {
+      "id": "book-coffee-table",
+      "kind": "normal",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Coffee_Table_book_stack.jpg/960px-Coffee_Table_book_stack.jpg",
+      "userHint": "화보집 팝니다",
+      "expectedCategory": "BOOK",
+      "expectedPriceRange": [5000, 100000],
+      "requiredKeywords": [["책", "도서", "화보"]]
+    },
+    {
+      "id": "kitchen-frying-pan",
+      "kind": "normal",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5c/Pfanne_%28Edelstahl%29.jpg",
+      "userHint": "스테인리스 팬 팝니다",
+      "expectedCategory": "KITCHEN_UTENSIL",
+      "expectedPriceRange": [5000, 80000],
+      "requiredKeywords": [["팬", "프라이팬", "후라이팬"]]
+    },
+    {
+      "id": "kitchen-rice-cooker",
+      "kind": "boundary",
+      "boundaryNote": "전기밥솥 — 가전(DIGITAL)과 주방용품(KITCHEN_UTENSIL) 사이에서 흔들릴 수 있다",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Panasonic_RICE_COOKER_SR-L15H8.jpg/960px-Panasonic_RICE_COOKER_SR-L15H8.jpg",
+      "userHint": "전기밥솥 팝니다",
+      "expectedCategory": "KITCHEN_UTENSIL",
+      "expectedPriceRange": [10000, 200000],
+      "requiredKeywords": [["밥솥"]]
+    },
+    {
+      "id": "lowquality-blurry-shoes",
+      "kind": "low_quality",
+      "boundaryNote": "초점이 나간 사진 — 무리하게 단정하기보다 낮은 신뢰도가 나오는 편이 바람직하다",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Blurry_shoes.jpg/960px-Blurry_shoes.jpg",
+      "userHint": "신발 팝니다",
+      "expectedCategory": "CLOTHING",
+      "expectedPriceRange": [5000, 150000],
+      "requiredKeywords": [["신발", "운동화", "슈즈"]]
+    }
+  ]
+}
