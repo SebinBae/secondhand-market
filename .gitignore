@@ -5,6 +5,9 @@
 .DS_Store
 Thumbs.db
 
+# IDE
+.idea/
+
 # Claude Code project instructions (local only, not for remote)
 .claude/commands/notion-log.md
 
