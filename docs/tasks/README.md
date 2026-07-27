@@ -47,6 +47,23 @@ task-09 기준선에서 12케이스 전부 `HIGH`가 나와, task-07의 저신�
 
 결과: 신뢰도 적중률 76% → 88% (`docs/measurements/ai-quality-baseline.md`).
 
+배치 2~3은 로드맵상 **확장 트랙 L2**(가격 타당성 리포트)에 해당한다. Phase 1과 병행 가능한 트랙이다(`docs/roadmap.md` 공통 규칙).
+
+## 배치 4 — Phase 1 DoD 마감
+
+확장 트랙을 진행하는 동안 Phase 1 DoD 4개가 그대로 남아 있다. Phase 2는 진입 조건이 Phase 1 DoD 충족이므로 여기부터 닫는다.
+
+| Phase 1 DoD | 상태 | 대응 |
+|---|---|---|
+| k6 Before 기준선 측정 | ❌ 스크립트만 있고 미실행 | task-13 |
+| 코어 루프 배포 환경 동작 | ❌ `frontend/` 비어 있음 | 미작성 |
+| ArchUnit 머지 게이트 | ⚠️ 테스트는 돌지만 main 브랜치 보호 없음 | 미작성 |
+| `v0.1.0` 릴리스 | ❌ 태그 0건 | 미작성 |
+
+| 순서 | 문서 | 브랜치 | 선행 조건 |
+|---|---|---|---|
+| 1 | task-13-k6-baseline-measurement.md | chore/k6-baseline-measurement | 없음 |
+
 ## 보류 — AI 카테고리 확장 (task-12)
 
 task-11에서 미뤄둔 항목. 카테고리가 5종뿐이라 자전거처럼 멀쩡히 팔 수 있는 물건이 초안 없이 422로 끝난다.
