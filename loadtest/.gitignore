@@ -1,3 +1,6 @@
-# 측정 결과물은 커밋하지 않는다 (로컬 실행 산출물)
+# 임시 실행 산출물은 커밋하지 않는다.
 results/*
 !results/.gitkeep
+# 다만 Before/After 비교의 근거가 되는 기준선 결과는 커밋한다.
+# docs/measurements/baseline.md가 "원본 결과"로 참조하므로 없으면 문서가 검증 불가능해진다.
+!results/*-baseline-100vu.json

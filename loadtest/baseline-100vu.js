@@ -26,6 +26,10 @@ export const options = {
     // 실패해도 그 자체가 데이터이므로 이 임계값은 참고용이다.
     http_req_duration: ['p(95)<300'],
     http_req_failed: ['rate<0.01'],
+    // 요청별 지표를 요약에 남기기 위해 서브메트릭을 선언한다.
+    // k6는 threshold로 선언한 서브메트릭만 집계·출력하므로, 태그만 붙여서는 나오지 않는다.
+    'http_req_duration{name:products_list}': ['p(95)<300'],
+    'http_req_duration{name:products_search}': ['p(95)<300'],
   },
 };
 

@@ -1,6 +1,8 @@
 # loadtest — k6 부하 테스트
 
-Phase 2 Before/After 성능 측정을 위한 도구/시나리오. **지금은 도구 준비 단계이며, 실제 Before 기준선 측정은 MVP 완성 시점(8/30~31)에 수행한다.**
+Phase 2 Before/After 성능 측정을 위한 도구/시나리오.
+
+**Before 기준선 측정 완료 (2026-07-27).** 결과와 해석은 [`docs/measurements/baseline.md`](../docs/measurements/baseline.md)에 있다. After 측정은 반드시 같은 시드 데이터셋·같은 시나리오로 수행한다.
 
 기획서 기준: 평시 100 VU, 스파이크 300 VU, 핵심 지표는 응답시간 p95.
 
@@ -41,6 +43,14 @@ Phase 2 Before/After 성능 측정을 위한 도구/시나리오. **지금은 �
      -H 'Content-Type: application/json' \
      -d '{"email":"loadtest@example.com","password":"<password>","nickname":"부하테스트"}'
    ```
+4. **시드 데이터 투입** — `seed.sql`로 상품 10만 건을 넣는다. 위 계정이 판매자가 되므로 3번 다음에 실행한다.
+   ```bash
+   docker exec -i secondhand-market-db bash -c \
+     'PGPASSWORD="$POSTGRES_PASSWORD" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < seed.sql
+   ```
+   실행이 끝나면 전체/SELLING/키워드 매칭 건수가 출력된다. 재실행해도 같은 데이터셋이 나오고, 다른 사용자의 상품은 건드리지 않는다.
+
+   > **데이터 없이 측정하지 말 것.** 상품이 수십 건인 상태에서 `%키워드%` 풀스캔은 0.1ms 안에 끝난다. 그 수치를 기준선으로 삼으면 Phase 2 개선이 개선으로 보이지 않는다.
 
 ## 실행
 
@@ -57,14 +67,30 @@ k6 run smoke.js
 k6 run baseline-100vu.js
 ```
 
+### k6를 설치하지 않고 실행하기 (권장)
+
+apt 설치는 sudo가 필요하다. Docker 이미지를 compose 네트워크에 붙이면 설치 없이 돌릴 수 있고, 2026-07-27 기준선도 이 방식으로 측정했다.
+
+```bash
+docker run --rm -i --user "$(id -u)" --network secondhand-market_monitoring \
+  -v "$PWD/results:/results" \
+  -e BASE_URL=http://app:8080 \
+  -e K6_TEST_EMAIL="loadtest@example.com" \
+  -e K6_TEST_PASSWORD="<password>" \
+  grafana/k6 run --summary-export=/results/$(date +%F)-baseline-100vu.json - < baseline-100vu.js
+```
+
+- `BASE_URL`이 `localhost`가 아니라 **컨테이너 이름(`app`)** 이다. 네트워크 이름은 `docker network ls`로 확인한다
+- `--user "$(id -u)"`가 없으면 마운트한 `results/`에 쓰지 못해 **요약 파일이 조용히 생성되지 않는다.** k6 이미지는 uid 12345로 도는데 호스트 디렉터리는 내 소유이기 때문이다. `--user root`로도 되지만 결과물이 root 소유로 남아 나중에 지우기 번거롭다
+
 ### 선택 환경변수
 
 | 변수 | 기본값 | 설명 |
 |------|--------|------|
-| `BASE_URL` | `http://localhost:8080` | 대상 서버 |
+| `BASE_URL` | `http://localhost:8080` | 대상 서버. k6를 컨테이너로 돌리면 `http://app:8080` |
 | `K6_TEST_EMAIL` | (필수) | 로그인 계정 |
 | `K6_TEST_PASSWORD` | (필수) | 로그인 비밀번호 |
-| `K6_SEARCH_KEYWORD` | `노트북` | 검색 시나리오 키워드 |
+| `K6_SEARCH_KEYWORD` | `노트북` | 검색 시나리오 키워드. 시드 데이터가 이 키워드에 약 1% 매칭된다 |
 
 ## 결과 저장
 
@@ -74,4 +100,6 @@ k6 run baseline-100vu.js
 k6 run --summary-export=results/2026-08-30-baseline-100vu.json baseline-100vu.js
 ```
 
-요약에는 요청별(`name` 태그: `auth_login` / `products_list` / `products_search`) 지표와 전체 `http_req_duration` p95가 포함된다. Before/After 비교 시 같은 파일명 규칙으로 저장해 나란히 둔다.
+Before/After 비교 시 같은 파일명 규칙으로 저장해 나란히 둔다.
+
+**요청별 지표는 태그만 붙여서는 나오지 않는다.** k6는 threshold로 선언한 서브메트릭만 집계하므로, `baseline-100vu.js`의 `thresholds`에 `http_req_duration{name:products_list}` 같은 항목이 있어야 요약과 export에 포함된다. 시나리오를 추가할 때 같은 규칙을 따른다.
