@@ -17,7 +17,9 @@ class FakeLLM:
         *,
         fail_always: bool = False,
         copy_result: CopyResult | None = None,
+        identifiable: bool = True,
     ) -> None:
+        self._identifiable = identifiable
         self._category_results = list(
             category_results
             or [CategoryResult(category=Category.DIGITAL, confidence=Confidence.HIGH)]
@@ -37,7 +39,11 @@ class FakeLLM:
             raise RuntimeError("업스트림 호출 실패(테스트)")
 
         if schema is VisionSummary:
-            return VisionSummary(summary="소니 미러리스 카메라 본체, 외관 사용감 있음")
+            return VisionSummary(
+                summary="소니 미러리스 카메라 본체, 외관 사용감 있음",
+                identifiable=self._identifiable,
+                identifiableReason="테스트 고정값",
+            )
         if schema is CategoryResult:
             self.category_prompts.append(text)
             return self._category_results.pop(0)

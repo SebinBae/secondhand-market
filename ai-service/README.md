@@ -14,6 +14,8 @@ intake → vision → category → price_estimation → description → END
 
 노드는 각각 상태의 한 조각만 채운다. 분기는 `category` 하나뿐이고, 재분류 후에도 신뢰도가 LOW면 계약된 오류로 끝낸다. 모든 LLM 호출은 Pydantic 스키마를 넘기는 구조화 출력이며, 호출 실패·파싱 실패는 해당 노드에서 1회 재시도한다.
 
+**신뢰도 상한은 코드가 강제한다.** Vision이 사진만으로 물건의 종류를 알 수 없다고 판단하면(`identifiable=false`) Category 노드가 `HIGH`를 `MEDIUM`으로 내린다(`cap_confidence`). 프롬프트 지시만으로는 흐릿한 사진에서도 HIGH가 나왔기 때문이다([측정 기록](../docs/measurements/ai-quality-baseline.md)). 상한이지 하한이 아니라서 모델이 스스로 낸 LOW는 그대로 두고, MEDIUM 강등은 재분류 분기를 태우지 않는다.
+
 LLM 호출부는 `app/llm.py`의 `LLMClient` 프로토콜로 분리돼 있어, 테스트는 OpenAI 호출 없이 가짜 구현으로 돈다.
 
 ## 오류 응답
@@ -42,7 +44,7 @@ docker compose up -d          # backend 스택 + ai-service
 uv run --env-file .env python eval/run_eval.py
 ```
 
-`eval/golden/cases.json`의 17케이스를 실행해 카테고리 정확도·신뢰도 적중률·가격 범위 적중률·형식 준수율을 출력하고, 결과를 `eval/results/<타임스탬프>.json`에 남긴다. 측정 수치와 해석은 [docs/measurements/ai-quality-baseline.md](../docs/measurements/ai-quality-baseline.md)에 있다.
+`eval/golden/cases.json`의 17케이스를 실행해 카테고리 정확도·신뢰도 적중률·가격 범위 적중률·형식 준수율을 출력하고, 결과를 `eval/results/<타임스탬프>.json`에 남긴다. 케이스별로 Vision의 식별 판정과 재분류 횟수도 함께 기록한다(`ProbeLLM`) — 응답만 봐서는 분기가 실제로 탔는지 알 수 없기 때문이다. 측정 수치와 해석은 [docs/measurements/ai-quality-baseline.md](../docs/measurements/ai-quality-baseline.md)에 있다.
 
 정답을 정의할 수 없는 케이스(매물 특정 불가, 카테고리 5종 밖)는 `expectedCategory` 등을 `null`로 두고 해당 지표의 분모에서 뺀다.
 

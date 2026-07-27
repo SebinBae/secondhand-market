@@ -51,36 +51,72 @@ def intake_node(state: DraftState) -> DraftState:
 
 
 def vision_node(state: DraftState, llm: LLMClient) -> DraftState:
-    """이미지에서 물건 종류/브랜드/상태를 읽어낸다."""
+    """이미지에서 물건 종류/브랜드/상태와 **식별 가능 여부**를 읽어낸다."""
     hint = state.get("userHint") or "(없음)"
     result = _invoke(
         llm,
         instructions=(
             "너는 중고거래 상품 사진을 분석하는 어시스턴트다. "
             "사진에서 확인 가능한 사실만 적고, 보이지 않는 것은 추측하지 마라. "
-            "물건 종류, 브랜드/모델(식별 가능한 경우), 외관 상태와 흠집 여부를 한국어로 요약하라."
+            "물건 종류, 브랜드/모델(식별 가능한 경우), 외관 상태와 흠집 여부를 한국어로 요약하라. "
+            "그와 별개로, 사진에 찍힌 것이 '어떤 종류의 물건인지' 알 수 있으면 "
+            "identifiable=true로 표시한다. 판단 기준은 물건의 종류뿐이다 — "
+            "브랜드나 모델명을 알아내지 못한 것은 식별 불가가 아니고, "
+            "같은 물건이 여러 개 있거나 배경에 다른 것이 함께 찍힌 것도 식별 불가가 아니다. "
+            "초점이 나가 형체를 알아볼 수 없거나, 일부만 찍혀 종류를 단정할 수 없거나, "
+            "서로 다른 물건이 뒤섞여 무엇을 파는 것인지 고를 수 없을 때만 false로 표시하고, "
+            "identifiableReason에 그렇게 본 이유를 한 문장으로 적는다. "
+            "판매자 힌트는 이 판단의 근거로 삼지 마라 — 사진만으로 판단한다."
         ),
         text=f"판매자가 남긴 힌트: {hint}",
         schema=VisionSummary,
         image_urls=state["imageUrls"],
     )
-    return {"visionSummary": result.summary}
+    return {
+        "visionSummary": result.summary,
+        "identifiable": result.identifiable,
+        "identifiableReason": result.identifiableReason,
+    }
+
+
+def cap_confidence(confidence: Confidence, *, identifiable: bool) -> Confidence:
+    """식별 불가 사진에서는 HIGH를 허용하지 않는다.
+
+    프롬프트 지시로는 지켜지지 않는다는 것이 기준선 측정에서 드러났으므로 코드로 막는다.
+    LOW로 내리지 않고 MEDIUM에서 멈추는 이유: LOW는 재분류 분기를 태우고 그래도 LOW면
+    초안 없이 422로 끝난다. 사진이 흐릴 뿐 팔 수 있는 물건인 경우까지 초안을 없애기보다,
+    낮은 신뢰도를 붙여 내려주고 판단은 사용자에게 맡긴다. 상한이지 하한이 아니므로
+    모델이 스스로 LOW를 냈다면 그대로 둔다.
+    """
+    if identifiable or confidence is not Confidence.HIGH:
+        return confidence
+    return Confidence.MEDIUM
 
 
 def category_node(state: DraftState, llm: LLMClient) -> DraftState:
-    """요약을 근거로 카테고리 1개와 신뢰도를 고른다."""
+    """요약을 근거로 카테고리 1개와 신뢰도를 고른다. 신뢰도 상한은 코드가 강제한다."""
     hint = state.get("userHint") or "(없음)"
+    identifiable = state["identifiable"]
     result = _invoke(
         llm,
         instructions=(
             f"다음 카테고리 중 정확히 하나를 고른다: {CATEGORY_VALUES}. "
             "목록에 없는 값을 만들지 마라. 근거가 뚜렷하면 HIGH, 애매하면 MEDIUM, "
-            "판단이 어려우면 LOW로 신뢰도를 매긴다."
+            "판단이 어려우면 LOW로 신뢰도를 매긴다. "
+            "사진만으로 물건을 특정할 수 없다고 표시된 경우에는 HIGH를 쓰지 마라."
         ),
-        text=f"상품 요약: {state['visionSummary']}\n판매자 힌트: {hint}",
+        text=(
+            f"상품 요약: {state['visionSummary']}\n"
+            f"사진만으로 물건 특정 가능: {'예' if identifiable else '아니오'}"
+            f" ({state['identifiableReason']})\n"
+            f"판매자 힌트: {hint}"
+        ),
         schema=CategoryResult,
     )
-    return {"category": result.category, "categoryConfidence": result.confidence}
+    return {
+        "category": result.category,
+        "categoryConfidence": cap_confidence(result.confidence, identifiable=identifiable),
+    }
 
 
 def retry_node(state: DraftState) -> DraftState:

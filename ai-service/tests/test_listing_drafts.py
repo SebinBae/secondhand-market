@@ -3,6 +3,7 @@ from collections.abc import Iterator
 import pytest
 from fastapi.testclient import TestClient
 
+from app.graph.nodes import cap_confidence
 from app.llm import CategoryResult, CopyResult
 from app.main import app
 from app.routers.listing_drafts import get_llm
@@ -71,6 +72,32 @@ def test_재분류_후에도_저신뢰면_계약된_오류를_반환한다(clien
     assert res.json()["message"]
     # 재분류는 1회까지만 한다
     assert llm.calls.count("CategoryResult") == 2
+
+
+def test_식별_불가_사진에서는_HIGH_신뢰도가_나올_수_없다(client: TestClient):
+    # LLM은 HIGH를 반환하지만 Vision이 식별 불가로 표시했으므로 코드가 강등한다.
+    llm = use(FakeLLM(identifiable=False))
+
+    res = client.post("/internal/v1/listing-drafts", json=REQUEST)
+
+    assert res.status_code == 200
+    assert ListingDraftResponse.model_validate(res.json()).confidence is Confidence.MEDIUM
+    # 강등은 상한일 뿐이므로 재분류 분기를 태우지 않는다
+    assert llm.calls.count("CategoryResult") == 1
+
+
+@pytest.mark.parametrize(
+    ("identifiable", "given", "expected"),
+    [
+        (True, Confidence.HIGH, Confidence.HIGH),
+        (False, Confidence.HIGH, Confidence.MEDIUM),
+        (False, Confidence.MEDIUM, Confidence.MEDIUM),
+        # 상한이지 하한이 아니다 — 모델이 스스로 낮춘 값은 올리지 않는다
+        (False, Confidence.LOW, Confidence.LOW),
+    ],
+)
+def test_신뢰도_상한_규칙(identifiable: bool, given: Confidence, expected: Confidence):
+    assert cap_confidence(given, identifiable=identifiable) is expected
 
 
 def test_LLM_호출_실패는_500이_아닌_계약된_오류가_된다(client: TestClient):

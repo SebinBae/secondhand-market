@@ -36,13 +36,15 @@ docs/tasks/task-05-product-image-upload.md 읽고 작업 진행해줘.
 
 배치 중 발견해 분리 처리한 것: 컨테이너용 docker 프로필 부재(#30).
 
-## 배치 3 — AI 신뢰도 보정
+## 배치 3 — AI 신뢰도 보정 (완료: 2026-07-27)
 
 task-09 기준선에서 12케이스 전부 `HIGH`가 나와, task-07의 저신뢰 재분류 분기가 죽어 있음이 드러났다. 측정 도구를 먼저 갖춘 뒤 고친다 — 순서를 바꾸면 "케이스를 통과하기 쉽게 맞췄다"를 반박할 수 없다.
 
-| 순서 | 문서 | 브랜치 | 선행 조건 |
+| 순서 | 문서 | PR | 상태 |
 |---|---|---|---|
-| 1 | task-10-confidence-goldenset-extension.md | chore/confidence-goldenset | task-09 머지 |
-| 2 | task-11-confidence-calibration.md | feat/confidence-calibration | task-10 머지 |
+| 1 | task-10-confidence-goldenset-extension | #37 | ✅ |
+| 2 | task-11-confidence-calibration | | ✅ |
+
+결과: 신뢰도 적중률 76% → 88% (`docs/measurements/ai-quality-baseline.md`).
 
 배치 4(LIKE 검색 보강)부터는 착수 시점에 작성.
