@@ -43,8 +43,14 @@ task-09 기준선에서 12케이스 전부 `HIGH`가 나와, task-07의 저신�
 | 순서 | 문서 | PR | 상태 |
 |---|---|---|---|
 | 1 | task-10-confidence-goldenset-extension | #37 | ✅ |
-| 2 | task-11-confidence-calibration | | ✅ |
+| 2 | task-11-confidence-calibration | #38 | ✅ |
 
 결과: 신뢰도 적중률 76% → 88% (`docs/measurements/ai-quality-baseline.md`).
 
-배치 4(LIKE 검색 보강)부터는 착수 시점에 작성.
+## 보류 — AI 카테고리 확장 (task-12)
+
+task-11에서 미뤄둔 항목. 카테고리가 5종뿐이라 자전거처럼 멀쩡히 팔 수 있는 물건이 초안 없이 422로 끝난다.
+
+**착수하지 않기로 했다(2026-07-27).** 문서(`task-12-category-expansion.md`)는 판단 근거를 남겨두기 위해 유지한다 — 추가할 3종의 선정 기준, `ETC`를 넣지 않는 이유, 카테고리를 늘리면 새로 생기는 경계의 판단 규칙, 골든셋 기대값을 어디까지 손대야 하는지가 정리돼 있다. 다시 착수할 때 이 문서부터 읽으면 된다.
+
+다음 배치는 착수 시점에 작성한다.
