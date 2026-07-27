@@ -1,11 +1,13 @@
 name: CI
 
 on:
+  # PR에는 경로 필터를 걸지 않는다.
+  # 이 job은 main의 required status check이므로, 경로 필터 때문에 실행되지 않으면
+  # GitHub이 "대기 중" 상태로 두고 머지를 영구히 막는다. 문서만 바꾼 PR도 통과시켜야 하므로
+  # 항상 실행한다. 필터를 되살리려면 required check에서 먼저 빼야 한다.
   pull_request:
     branches: [main]
-    paths:
-      - 'backend/**'
-      - '.github/workflows/ci.yml'
+  # push는 머지 게이트가 아니므로 관련 경로가 바뀔 때만 돌린다.
   push:
     branches: [main]
     paths:
