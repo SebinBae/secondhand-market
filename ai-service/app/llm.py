@@ -20,9 +20,15 @@ T = TypeVar("T", bound=BaseModel)
 
 
 class VisionSummary(BaseModel):
-    """이미지에서 읽어낸 물건 종류/브랜드/상태 요약."""
+    """이미지에서 읽어낸 물건 종류/브랜드/상태 요약.
+
+    `identifiable`은 요약 문장과 **분리된 필드**여야 한다. 불확실성을 문장 안에 녹이면
+    다음 노드가 그것을 읽어내지 못하고 확신에 찬 요약만 전달받는다(task-09 실패 원인).
+    """
 
     summary: str
+    identifiable: bool
+    identifiableReason: str
 
 
 class CategoryResult(BaseModel):

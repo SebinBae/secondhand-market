@@ -19,12 +19,43 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app.config import settings  # noqa: E402
 from app.copy_rules import BANNED_EXPRESSIONS, DESCRIPTION_MAX, TITLE_MAX  # noqa: E402
 from app.graph import run_listing_draft  # noqa: E402
-from app.llm import OpenAILLMClient  # noqa: E402
+from app.llm import CategoryResult, LLMClient, OpenAILLMClient, VisionSummary  # noqa: E402
 from app.schemas import ListingDraftRequest  # noqa: E402
 
 EVAL_DIR = Path(__file__).resolve().parent
 CASES_PATH = EVAL_DIR / "golden" / "cases.json"
 RESULTS_DIR = EVAL_DIR / "results"
+
+
+class ProbeLLM:
+    """케이스별 내부 동작을 관찰하기 위한 얇은 래퍼.
+
+    그래프는 응답만 돌려주므로 재분류 분기가 실제로 탔는지 밖에서 알 수 없다.
+    성공한 CategoryResult 호출 수만 세면 `category_node` 실행 횟수와 정확히 같다
+    (`_invoke`의 실패 재시도는 예외를 던지므로 여기까지 오지 않는다) → 재분류 횟수 = 호출 수 - 1.
+    """
+
+    def __init__(self, inner: LLMClient) -> None:
+        self._inner = inner
+        self.category_calls = 0
+        self.identifiable: bool | None = None
+        self.identifiable_reason: str | None = None
+
+    def reset(self) -> None:
+        self.category_calls = 0
+        self.identifiable = None
+        self.identifiable_reason = None
+
+    def structured(self, *, instructions, text, schema, image_urls=()):
+        result = self._inner.structured(
+            instructions=instructions, text=text, schema=schema, image_urls=image_urls
+        )
+        if schema is CategoryResult:
+            self.category_calls += 1
+        elif schema is VisionSummary:
+            self.identifiable = result.identifiable
+            self.identifiable_reason = result.identifiableReason
+        return result
 
 
 def check_format(title: str, description: str) -> list[str]:
@@ -52,8 +83,9 @@ def check_confidence(expected: str, actual: str) -> bool:
     return actual == "HIGH" if expected == "HIGH" else actual != "HIGH"
 
 
-def run_case(case: dict, llm: OpenAILLMClient) -> dict:
+def run_case(case: dict, llm: ProbeLLM) -> dict:
     started = time.monotonic()
+    llm.reset()
     result = {
         "id": case["id"],
         "kind": case["kind"],
@@ -64,6 +96,13 @@ def run_case(case: dict, llm: OpenAILLMClient) -> dict:
     price_range = case["expectedPriceRange"]
     keyword_groups = case["requiredKeywords"]
 
+    def probe() -> dict:
+        return {
+            "identifiable": llm.identifiable,
+            "identifiableReason": llm.identifiable_reason,
+            "retryCount": max(llm.category_calls - 1, 0),
+        }
+
     try:
         draft = run_listing_draft(
             ListingDraftRequest(imageUrls=[case["imageUrl"]], userHint=case.get("userHint")), llm
@@ -73,6 +112,7 @@ def run_case(case: dict, llm: OpenAILLMClient) -> dict:
             status="error",
             error=f"{type(error).__name__}: {error}",
             elapsedSec=round(time.monotonic() - started, 1),
+            **probe(),
             categoryCorrect=False if case["expectedCategory"] else None,
             confidenceOk=False,
             priceInRange=False if price_range else None,
@@ -88,6 +128,7 @@ def run_case(case: dict, llm: OpenAILLMClient) -> dict:
     result.update(
         status="ok",
         elapsedSec=round(time.monotonic() - started, 1),
+        **probe(),
         actualCategory=draft.category.value,
         categoryCorrect=(
             draft.category.value == case["expectedCategory"] if case["expectedCategory"] else None
@@ -115,7 +156,7 @@ def rate(results: list[dict], key: str) -> tuple[int, int]:
 
 def main() -> int:
     cases = json.loads(CASES_PATH.read_text(encoding="utf-8"))["cases"]
-    llm = OpenAILLMClient()
+    llm = ProbeLLM(OpenAILLMClient())
 
     results = []
     for index, case in enumerate(cases, start=1):
@@ -145,6 +186,14 @@ def main() -> int:
     print("\n=== 지표 ===")
     for name, (hit, total) in metrics.items():
         print(f"{name:22} {hit:2}/{total}  ({hit / total:.0%})")
+
+    retried = [r for r in results if r["retryCount"] > 0]
+    unidentifiable = [r for r in results if r["identifiable"] is False]
+    print(f"\n재분류 트리거 {len(retried)}건: {', '.join(r['id'] for r in retried) or '없음'}")
+    print(
+        f"Vision 식별 불가 {len(unidentifiable)}건: "
+        f"{', '.join(r['id'] for r in unidentifiable) or '없음'}"
+    )
 
     errors = [r for r in results if r["status"] == "error"]
     if errors:

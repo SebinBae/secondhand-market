@@ -14,6 +14,8 @@ class DraftState(TypedDict, total=False):
     userHint: str | None
     # Vision
     visionSummary: str
+    identifiable: bool
+    identifiableReason: str
     # Category
     category: Category
     categoryConfidence: Confidence
