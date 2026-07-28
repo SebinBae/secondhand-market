@@ -23,6 +23,7 @@ public class ProductDetailResponse {
   private ProductStatus productStatus;
   private ProductCategory productCategory;
   private List<String> imageUrls;
+  private String location;
   private LocalDateTime createdAt;
 
   public static ProductDetailResponse from(ProductEntity product) {
@@ -41,6 +42,7 @@ public class ProductDetailResponse {
         product.getProductStatus(),
         product.getProductCategory(),
         imageUrls,
+        product.getLocation(),
         product.getCreatedAt()
     );
   }

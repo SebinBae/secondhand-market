@@ -21,6 +21,7 @@ public class ProductResponse {
   private ProductStatus productStatus;
   private ProductCategory productCategory;
   private String thumbnailUrl;
+  private String location;
   private LocalDateTime createdAt;
 
   public static ProductResponse from(ProductEntity productEntity){
@@ -34,6 +35,7 @@ public class ProductResponse {
         productEntity.getProductStatus(),
         productEntity.getProductCategory(),
         productEntity.getThumbnailUrl(),
+        productEntity.getLocation(),
         productEntity.getCreatedAt()
     );
   }

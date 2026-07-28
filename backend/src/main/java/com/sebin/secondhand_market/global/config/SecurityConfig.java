@@ -60,13 +60,16 @@ public class SecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
 
-    // 3000포트에서 오는 요청 허용
+    // 프론트 개발 서버 허용. 5173은 Vite 기본 포트 — 3000은 docker compose의 Grafana가 쓰고 있다.
     config.setAllowedOrigins(List.of(
-        "http://localhost:3000"
+        "http://localhost:3000",
+        "http://localhost:5173"
     ));
 
+    // PATCH가 빠져 있어 상품 상태 변경(PATCH /api/products/{id}/status)이
+    // 브라우저에서 preflight 단계에 막혔다.
     config.setAllowedMethods(List.of(
-        "GET", "POST", "PUT", "DELETE", "OPTIONS"
+        "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
     ));
 
     config.setAllowedHeaders(List.of("*"));

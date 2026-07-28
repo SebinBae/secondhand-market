@@ -34,4 +34,8 @@ public class ProductCreateRequest {
   @Size(max = 10)
   private List<String> imageUrls;
 
+  /** 거래 희망 장소(동네). 선택 항목이며 자유 입력이다. */
+  @Size(max = 50)
+  private String location;
+
 }
