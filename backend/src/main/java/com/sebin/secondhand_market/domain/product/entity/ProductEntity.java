@@ -57,6 +57,11 @@ public class ProductEntity extends BaseEntity {
   @Column(nullable = false, length = 20)
   private ProductStatus productStatus;
 
+  // 거래 희망 장소(동네). 판매자 자유 입력이며 선택 항목이다.
+  // 행정동 마스터·동네 인증과는 무관하다 — 그건 별도 기능이다.
+  @Column(length = 50)
+  private String location;
+
   // 상품 이미지 (표시 순서 정렬). 상품 삭제 시 함께 제거된다.
   // 목록 조회가 상품마다 썸네일을 읽으므로 BatchSize로 묶는다 — 없으면 페이지 크기만큼 N+1이 난다.
   @BatchSize(size = 100)
@@ -69,7 +74,7 @@ public class ProductEntity extends BaseEntity {
     return images.isEmpty() ? null : images.get(0).getUrl();
   }
 
-  // 기본 생성자
+  // 기본 생성자 — 거래 장소는 선택 항목이라 받지 않는 형태를 함께 둔다
   public ProductEntity(
       String title,
       int price,
@@ -78,12 +83,25 @@ public class ProductEntity extends BaseEntity {
       ProductStatus productStatus,
       UserEntity seller
   ) {
+    this(title, price, description, productCategory, productStatus, seller, null);
+  }
+
+  public ProductEntity(
+      String title,
+      int price,
+      String description,
+      ProductCategory productCategory,
+      ProductStatus productStatus,
+      UserEntity seller,
+      String location
+  ) {
     this.title = title;
     this.price = price;
     this.description = description;
     this.productCategory = productCategory;
     this.productStatus = productStatus;
     this.seller = seller;
+    this.location = location;
   }
 
   // 수정
@@ -91,12 +109,14 @@ public class ProductEntity extends BaseEntity {
       String title,
       int price,
       String description,
-      ProductCategory productCategory
+      ProductCategory productCategory,
+      String location
   ) {
     this.title = title;
     this.price = price;
     this.description = description;
     this.productCategory = productCategory;
+    this.location = location;
 
   }
 

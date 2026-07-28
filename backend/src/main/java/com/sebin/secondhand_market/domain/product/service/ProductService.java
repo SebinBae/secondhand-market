@@ -38,7 +38,8 @@ public class ProductService {
         request.getDescription(),
         request.getProductCategory(),
         ProductStatus.SELLING,
-        seller
+        seller,
+        request.getLocation()
     );
 
     // 등록 전 업로드한 이미지를 연결한다 (AI 초안 흐름). 없으면 아무것도 하지 않는다.
@@ -73,7 +74,8 @@ public class ProductService {
         request.getTitle(),
         request.getPrice(),
         request.getDescription(),
-        request.getProductCategory()
+        request.getProductCategory(),
+        request.getLocation()
     );
 
   }
