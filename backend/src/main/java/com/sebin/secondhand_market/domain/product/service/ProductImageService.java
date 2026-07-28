@@ -71,6 +71,35 @@ public class ProductImageService {
     return urls;
   }
 
+  /**
+   * 상품에 붙이지 않고 이미지만 저장소에 올린다.
+   *
+   * <p>AI 등록은 사진이 먼저 있어야 초안을 만들 수 있는데, 초안이 나와야 상품을 만들 수 있다.
+   * {@link #upload}는 productId를 요구하므로 이 순환을 풀 수 없어 별도 경로를 둔다.
+   * 여기서 받은 URL은 상품 등록 요청의 {@code imageUrls}로 넘겨 상품에 연결한다.
+   *
+   * <p>연결되지 않은 파일은 저장소에 남는다. 정리 배치는 두지 않는다 — 현 단계에서 과하다.
+   *
+   * @return 저장된 이미지 URL 목록(요청 순서대로)
+   */
+  public List<String> uploadDetached(List<MultipartFile> files) {
+    if (files.size() > MAX_IMAGES_PER_PRODUCT) {
+      throw new ImageCountExceededException();
+    }
+
+    // 부분 업로드 방지를 위해 저장 전에 전부 검증
+    for (MultipartFile file : files) {
+      validate(file);
+    }
+
+    List<String> urls = new ArrayList<>();
+    for (MultipartFile file : files) {
+      urls.add(imageStorage.upload(
+          readBytes(file), file.getOriginalFilename(), file.getContentType()));
+    }
+    return urls;
+  }
+
   private void validate(MultipartFile file) {
     if (!ALLOWED_CONTENT_TYPES.contains(file.getContentType())) {
       throw new InvalidImageFormatException();

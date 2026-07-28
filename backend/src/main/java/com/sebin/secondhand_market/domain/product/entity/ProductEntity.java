@@ -97,4 +97,19 @@ public class ProductEntity extends BaseEntity {
     this.productStatus = productStatus;
   }
 
+  /**
+   * 등록 전에 올려둔 이미지 URL을 상품에 연결한다. 전달된 순서가 표시 순서가 된다.
+   *
+   * <p>cascade = ALL이므로 상품 저장 시 함께 저장된다.
+   */
+  public void addImages(List<String> urls) {
+    if (urls == null) {
+      return;
+    }
+    int order = images.size();
+    for (String url : urls) {
+      images.add(new ProductImageEntity(this, url, order++));
+    }
+  }
+
 }
