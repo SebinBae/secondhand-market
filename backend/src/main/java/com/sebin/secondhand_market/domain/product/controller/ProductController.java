@@ -129,8 +129,8 @@ public class ProductController {
   ) {
     ProductSearchRequest request = new ProductSearchRequest(keyword, status, sortType);
 
-    Page<ProductResponse> responses = productReadService.search(request, page, size)
-        .map(ProductResponse::from);
+    // 변환은 서비스(트랜잭션 안)에서 끝난다 — 여기서 매핑하면 지연 로딩이 세션 밖에서 터진다.
+    Page<ProductResponse> responses = productReadService.search(request, page, size);
 
     return ResponseEntity.ok(PageResponse.from(responses));
   }

@@ -2,6 +2,7 @@ package com.sebin.secondhand_market.domain.product.service;
 
 import com.sebin.secondhand_market.domain.product.dto.request.ProductSearchRequest;
 import com.sebin.secondhand_market.domain.product.dto.response.ProductDetailResponse;
+import com.sebin.secondhand_market.domain.product.dto.response.ProductResponse;
 import com.sebin.secondhand_market.domain.product.entity.ProductEntity;
 import com.sebin.secondhand_market.domain.product.exception.ProductNotFoundException;
 import com.sebin.secondhand_market.domain.product.repository.ProductRepository;
@@ -22,10 +23,19 @@ public class ProductReadService {
   private final ProductQueryRepository productQueryRepository;
   private final ProductRepository productRepository;
 
-  public Page<ProductEntity> search(ProductSearchRequest request, int page, int size){
+  /**
+   * 상품 검색. <b>DTO 변환까지 이 안에서 끝낸다.</b>
+   *
+   * <p>엔티티를 그대로 돌려주면 안 된다. {@code ProductResponse.from}이 대표 이미지를 읽으려고
+   * 지연 로딩 컬렉션을 건드리는데, {@code open-in-view=false}라 컨트롤러에는 세션이 없어
+   * LazyInitializationException이 난다.
+   */
+  @Transactional(readOnly = true)
+  public Page<ProductResponse> search(ProductSearchRequest request, int page, int size){
     Pageable pageable = PageRequest.of(page, size);
 
-    return productQueryRepository.search(request, pageable);
+    return productQueryRepository.search(request, pageable)
+        .map(ProductResponse::from);
   }
 
   // 타 도메인 공개 조회 창구 — 상품 단건 조회(없으면 예외)
