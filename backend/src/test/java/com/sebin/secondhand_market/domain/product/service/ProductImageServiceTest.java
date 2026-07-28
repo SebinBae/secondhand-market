@@ -127,4 +127,56 @@ class ProductImageServiceTest {
     verify(imageStorage, times(2)).upload(any(), any(), any());
     verify(productImageRepository, times(2)).save(any(ProductImageEntity.class));
   }
+
+  // ── 상품 없는 업로드(AI 등록 초안용) ──────────────────────────
+
+  @Test
+  @DisplayName("상품 없이 업로드하면 저장소에만 올리고 DB 행은 만들지 않는다")
+  void uploadDetachedDoesNotPersistRows() {
+    given(imageStorage.upload(any(), any(), any())).willReturn("https://cdn/img.jpg");
+
+    List<String> urls = productImageService.uploadDetached(List.of(jpeg("a.jpg"), jpeg("b.jpg")));
+
+    assertThat(urls).hasSize(2);
+    verify(imageStorage, times(2)).upload(any(), any(), any());
+    // 아직 붙일 상품이 없으므로 product_images 행이 생기면 안 된다
+    verifyNoInteractions(productImageRepository, productRepository);
+  }
+
+  @Test
+  @DisplayName("상품 없는 업로드에도 형식 검증이 적용된다")
+  void uploadDetachedRejectsInvalidFormat() {
+    MockMultipartFile txt = new MockMultipartFile("files", "a.txt", "text/plain", new byte[]{1});
+
+    assertThatThrownBy(() -> productImageService.uploadDetached(List.of(txt)))
+        .isInstanceOf(InvalidImageFormatException.class);
+
+    verifyNoInteractions(imageStorage);
+  }
+
+  @Test
+  @DisplayName("상품 없는 업로드에도 크기 상한이 적용된다")
+  void uploadDetachedRejectsTooLargeFile() {
+    MultipartFile big = org.mockito.Mockito.mock(MultipartFile.class);
+    given(big.getContentType()).willReturn("image/jpeg");
+    given(big.getSize()).willReturn(5L * 1024 * 1024 + 1);
+
+    assertThatThrownBy(() -> productImageService.uploadDetached(List.of(big)))
+        .isInstanceOf(ImageTooLargeException.class);
+
+    verifyNoInteractions(imageStorage);
+  }
+
+  @Test
+  @DisplayName("상품 없는 업로드도 한 번에 10장을 넘길 수 없다")
+  void uploadDetachedRejectsWhenCountExceeded() {
+    List<MultipartFile> eleven = java.util.stream.IntStream.range(0, 11)
+        .<MultipartFile>mapToObj(i -> jpeg(i + ".jpg"))
+        .toList();
+
+    assertThatThrownBy(() -> productImageService.uploadDetached(eleven))
+        .isInstanceOf(ImageCountExceededException.class);
+
+    verifyNoInteractions(imageStorage);
+  }
 }

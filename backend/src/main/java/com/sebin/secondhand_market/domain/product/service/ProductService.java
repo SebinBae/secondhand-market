@@ -41,6 +41,9 @@ public class ProductService {
         seller
     );
 
+    // 등록 전 업로드한 이미지를 연결한다 (AI 초안 흐름). 없으면 아무것도 하지 않는다.
+    product.addImages(request.getImageUrls());
+
     ProductEntity saved = productRepository.save(product);
 
     // 저장 성공 후 이벤트 발행 — 실제 수신은 커밋 이후(AFTER_COMMIT)

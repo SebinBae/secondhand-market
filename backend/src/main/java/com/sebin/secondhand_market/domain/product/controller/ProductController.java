@@ -4,6 +4,7 @@ import com.sebin.secondhand_market.domain.product.dto.request.ListingDraftReques
 import com.sebin.secondhand_market.domain.product.dto.request.ProductCreateRequest;
 import com.sebin.secondhand_market.domain.product.dto.request.ProductSearchRequest;
 import com.sebin.secondhand_market.domain.product.dto.request.ProductStatusChangeRequest;
+import com.sebin.secondhand_market.domain.product.dto.response.ImageUploadResponse;
 import com.sebin.secondhand_market.domain.product.dto.response.ListingDraftResponse;
 import com.sebin.secondhand_market.domain.product.dto.response.ProductCreatedResponse;
 import com.sebin.secondhand_market.domain.product.dto.response.ProductDetailResponse;
@@ -148,6 +149,15 @@ public class ProductController {
       @RequestBody @Valid ListingDraftRequest request
   ) {
     return ResponseEntity.ok(productAiAssistService.createDraft(request));
+  }
+
+  // 상품 등록 전 이미지 업로드 (AI 초안 입력용). 저장소에만 올리고 상품에는 붙이지 않는다.
+  @Operation(summary = "상품 등록 전 이미지 업로드")
+  @PostMapping("/images")
+  public ResponseEntity<ImageUploadResponse> uploadImagesBeforeCreate(
+      @RequestPart("files") List<MultipartFile> files
+  ) {
+    return ResponseEntity.ok(new ImageUploadResponse(productImageService.uploadDetached(files)));
   }
 
   // 상품 이미지 업로드 (본인 상품, 여러 장, 상품당 최대 10장)
