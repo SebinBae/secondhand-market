@@ -1,7 +1,7 @@
 package com.sebin.secondhand_market.global.config;
 
+import com.sebin.secondhand_market.domain.chat.websocket.ChatSubscriptionInterceptor;
 import com.sebin.secondhand_market.global.security.websocket.JwtChannelInterceptor;
-import com.sebin.secondhand_market.global.security.websocket.JwtHandShakeInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -15,15 +15,17 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-  private final JwtHandShakeInterceptor jwtHandShakeInterceptor;
   private final JwtChannelInterceptor jwtChannelInterceptor;
+  private final ChatSubscriptionInterceptor chatSubscriptionInterceptor;
 
   // client ---> server(Handshake URL)
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
+    // 핸드셰이크에는 인증 인터셉터를 붙이지 않는다.
+    // 브라우저의 WebSocket API는 핸드셰이크 요청에 Authorization 헤더를 넣을 수 없다.
+    // 인증은 STOMP CONNECT 프레임에서 한다 — JwtChannelInterceptor 참조.
     registry.addEndpoint("/ws-chat")
-        .addInterceptors(jwtHandShakeInterceptor)
-        .setAllowedOriginPatterns("http://localhost:3000");
+        .setAllowedOriginPatterns("http://localhost:3000", "http://localhost:5173");
   }
 
   @Override
@@ -37,7 +39,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
   @Override
   public void configureClientInboundChannel(ChannelRegistration registration) {
-    // client -> 서버 메시지에 인터셉터 적용
-    registration.interceptors(jwtChannelInterceptor);
+    // 순서가 중요하다 — 인증(principal 주입)이 먼저 끝나야 구독 인가가 판단할 수 있다.
+    registration.interceptors(jwtChannelInterceptor, chatSubscriptionInterceptor);
   }
 }
